@@ -64,7 +64,9 @@ if use external_url "http://gitlab.example.com:10080", must change
 
     ports:
       - "10080:80"
+	  
 to	  
+
 	    ports:
       - "10080:10080"
 	  
