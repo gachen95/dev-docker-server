@@ -74,7 +74,7 @@ to
 Docker uses the default 172.17.0.0/16 subnet for container networking. This conflicts with current company network environment.  
 
 Solutions:  
-docker-compose creates a default network like br-a9e366316a13 instead of bridge0 for all the inside services.  
+docker-compose creates a default network like br-a9e366316a13 instead of docker0 for all the inside services.  
 My solution is to let docker-compose use docker0 which has a customized subset 198.168.9.1/24
 
 3.1 Check the existing docker network
