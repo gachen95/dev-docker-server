@@ -13,6 +13,8 @@
 		$ docker-compose up -d   // detached mode
 		$ docker-compose ps      // see what is currently running
 		$ docker-compose stop
+		$ docker-compose kill
+		$ docker-compose rm
 		
 		$ docker-compose run <name> bash  // debug
  
