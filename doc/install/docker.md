@@ -52,7 +52,10 @@
 		$ whereis docker  
 		$ which docker
 
-7. Common docker command    
+7. docker store location  
+
+		/var/lib/docker/
+8. Common docker command    
 	1. Delete none images and recycle spaces
 	
 			$ docker images --no-trunc| grep none | awk '{print $3}' | xargs -r docker rmi  
