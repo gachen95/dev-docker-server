@@ -55,7 +55,14 @@
 7. docker store location  
 
 		/var/lib/docker/
-8. Common docker command    
+		
+8. install curl in docker  
+   curl will be used to find out if web server works in dockered nginx. Because there is no package cache in the docker image, you need to run:
+
+		apt-get -qq update
+		apt-get -qq -y install curl	
+	
+9. Common docker command    
 	1. Delete none images and recycle spaces
 	
 			$ docker images --no-trunc| grep none | awk '{print $3}' | xargs -r docker rmi  
