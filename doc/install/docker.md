@@ -51,3 +51,16 @@
 6. Find app location  
 		$ whereis docker  
 		$ which docker
+
+7. Common docker command    
+	1. Delete none images and recycle spaces
+	
+			$ docker images --no-trunc| grep none | awk '{print $3}' | xargs -r docker rmi  
+	2. Delete Existed container
+	
+			$ docker rm `docker ps -a | grep Exited | awk '{print $1 }’`
+	3. Delete never used images
+	
+			$ docker rmi `docker images -aq`  
+			$ docker stop $(docker ps -a -q)
+			$ docker rm $(docker ps -a -q)
