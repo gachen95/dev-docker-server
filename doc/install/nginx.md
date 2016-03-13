@@ -98,3 +98,4 @@ The solution is to change the web context path of sonar, nexus, etc.
 5. [Running Nexus Behind a Reverse Proxy](https://books.sonatype.com/nexus-book/reference/install-sect-proxy.html)
 6. [Running Jenkins from a subdomain](https://wiki.jenkins-ci.org/display/JENKINS/Jenkins+behind+an+NGinX+reverse+proxy)
 7. [Running Jenkins behind Apache](https://wiki.jenkins-ci.org/display/JENKINS/Running+Jenkins+behind+Apache)
+8. [Reverse proxy configuration examples](https://github.com/foosel/OctoPrint/wiki/Reverse-proxy-configuration-examples)
