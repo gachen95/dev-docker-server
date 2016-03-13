@@ -38,3 +38,63 @@ services:
       - /srv/docker/gitlab/gitlab/logs/reconfigure:/var/log/gitlab/reconfigure
       
     network_mode: "bridge"      
+    
+  registry:
+    image: registry:2.3
+    ports:
+     # - 127.0.0.1:5000:5000
+      - 5000:5000    
+    volumes:
+      - /srv/docker/registry/data:/var/lib/registry 
+    network_mode: "bridge"      
+
+#  registry-ui:
+#    image: atcol/docker-registry-ui:latest
+#    ports:     
+#      - 8080:8080
+#    links:
+#      - registry:registry    
+#    network_mode: "bridge"     
+#
+#  docker-registry-frontend:
+#    image: konradkleine/docker-registry-frontend:v2
+#    ports:     
+#      - 8080:8080
+#    links:
+#      - registry:registry
+#    environment:
+#      - ENV_DOCKER_REGISTRY_HOST=vwat137
+#      - ENV_DOCKER_REGISTRY_PORT=5000
+#    network_mode: "bridge" 
+
+  postgresql:
+    #restart: always
+    image: postgres:9.5.1
+    environment:
+      - POSTGRES_USER=sonar
+      - POSTGRES_PASSWORD=sonar_cow_pass
+      - POSTGRES_DB=cow_sonar    
+    volumes:
+      - /srv/docker/gitlab/postgresql:/var/lib/postgresql  
+    #To use the bridge network use network_mode: https://docs.docker.com/compose/compose-file/#network-mode
+    network_mode: "bridge"   
+  
+  sonar:
+    image: sonarqube:5.3
+    links:
+      - postgresql:sonar_db
+    environment:
+     - SONARQUBE_JDBC_USERNAME=sonar
+     - SONARQUBE_JDBC_PASSWORD=sonar_cow_pass
+     - SONARQUBE_JDBC_URL=jdbc:postgresql://sonar_db/cow_sonar  
+    network_mode: "bridge"
+    volumes:   
+      - /docker/conf/sonar/sonar.properties:/opt/sonarqube/conf/sonar.properties
+    
+  nexus:
+    image: sonatype/nexus:2.12.0-01
+    environment:
+      - CONTEXT_PATH=/nexus
+    volumes:
+      - /srv/docker/nexus:/sonatype-work    
+    network_mode: "bridge"      
