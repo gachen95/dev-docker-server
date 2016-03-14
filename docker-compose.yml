@@ -7,8 +7,8 @@ services:
       - "80:80"      
     network_mode: "bridge" 
     volumes:   
-      - /docker/conf/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      - /docker/conf/nginx/conf.d:/etc/nginx/conf.d:ro
+      - $PWD/docker/conf/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - $PWD/docker/conf/nginx/conf.d:/etc/nginx/conf.d:ro
          
   gitlab:    
     image: gitlab/gitlab-ce:8.5.1-ce.0
@@ -32,10 +32,10 @@ services:
         gitlab_rails['smtp_openssl_verify_mode'] = 'none'         
            
     volumes:      
-      - /srv/docker/gitlab/gitlab/config:/etc/gitlab
-      - /srv/docker/gitlab/gitlab/logs:/var/log/gitlab
-      - /srv/docker/gitlab/gitlab/data:/var/opt/gitlab
-      - /srv/docker/gitlab/gitlab/logs/reconfigure:/var/log/gitlab/reconfigure
+      - $PWD/srv/docker/gitlab/gitlab/config:/etc/gitlab
+      - $PWD/srv/docker/gitlab/gitlab/logs:/var/log/gitlab
+      - $PWD/srv/docker/gitlab/gitlab/data:/var/opt/gitlab
+      - $PWD/srv/docker/gitlab/gitlab/logs/reconfigure:/var/log/gitlab/reconfigure
       
     network_mode: "bridge"      
     
@@ -45,7 +45,7 @@ services:
      # - 127.0.0.1:5000:5000
       - 5000:5000    
     volumes:
-      - /srv/docker/registry/data:/var/lib/registry 
+      - $PWD/srv/docker/registry/data:/var/lib/registry 
     network_mode: "bridge"      
 
 #  registry-ui:
@@ -75,7 +75,7 @@ services:
       - POSTGRES_PASSWORD=sonar_cow_pass
       - POSTGRES_DB=cow_sonar    
     volumes:
-      - /srv/docker/gitlab/postgresql:/var/lib/postgresql  
+      - $PWD/srv/docker/gitlab/postgresql:/var/lib/postgresql  
     #To use the bridge network use network_mode: https://docs.docker.com/compose/compose-file/#network-mode
     network_mode: "bridge"   
   
@@ -89,12 +89,12 @@ services:
      - SONARQUBE_JDBC_URL=jdbc:postgresql://sonar_db/cow_sonar  
     network_mode: "bridge"
     volumes:   
-      - /docker/conf/sonar/sonar.properties:/opt/sonarqube/conf/sonar.properties
+      - $PWD/docker/conf/sonar/sonar.properties:/opt/sonarqube/conf/sonar.properties
     
   nexus:
     image: sonatype/nexus:2.12.0-01
     environment:
       - CONTEXT_PATH=/nexus
     volumes:
-      - /srv/docker/nexus:/sonatype-work    
+      - $PWD/srv/docker/nexus:/sonatype-work    
     network_mode: "bridge"      
