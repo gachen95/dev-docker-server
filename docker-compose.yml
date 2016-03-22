@@ -4,97 +4,130 @@ services:
   nginx:
     image: nginx:1.9.11
     ports:
-      - "80:80"      
-    network_mode: "bridge" 
-    volumes:   
-      - $PWD/docker/conf/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      - $PWD/docker/conf/nginx/conf.d:/etc/nginx/conf.d:ro
-         
-  gitlab:    
-    image: gitlab/gitlab-ce:8.5.1-ce.0
-    ports:
-      - "10080:10080"
-    environment:                       
-      GITLAB_OMNIBUS_CONFIG: |
-        external_url "http://gitlab.example.com:10080"
-        # Add any other gitlab.rb configuration here, each on its own line 
-        # https://gitlab.com/gitlab-org/omnibus-gitlab/blob/master/files/gitlab-config-template/gitlab.rb.template                
-        gitlab_rails['gitlab_email_enabled'] = true
-        gitlab_rails['gitlab_email_from'] = 'Richard@mail.ca'
-        gitlab_rails['gitlab_email_display_name'] = 'Gitlab'
-        gitlab_rails['gitlab_email_reply_to'] = 'noreply@mail.ca'
-        #timezone
-        gitlab_rails['time_zone'] = 'America/New_York'        
-        #smtp
-        gitlab_rails['smtp_enable'] = true        
-        gitlab_rails['smtp_address'] = "smtpserver.mail.ca"
-        gitlab_rails['smtp_domain'] = "mail.ca" 	  
-        gitlab_rails['smtp_openssl_verify_mode'] = 'none'         
-           
-    volumes:      
-      - $PWD/srv/docker/gitlab/gitlab/config:/etc/gitlab
-      - $PWD/srv/docker/gitlab/gitlab/logs:/var/log/gitlab
-      - $PWD/srv/docker/gitlab/gitlab/data:/var/opt/gitlab
-      - $PWD/srv/docker/gitlab/gitlab/logs/reconfigure:/var/log/gitlab/reconfigure
-      
-    network_mode: "bridge"      
-    
+      - "80:80"
+    links:
+      - sonar:sonar
+      - gitlab:gitlab
+      - nexus:nexus
+      - jenkins:jenkins
+    network_mode: "bridge"
+    volumes:
+      - $PWD/conf/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - $PWD/conf/nginx/conf.d:/etc/nginx/conf.d:ro
+
+
+  gitlab:
+    #restart: always
+    image: sameersbn/gitlab:8.5.1
+    links:
+      - redis:redisio
+      - postgresql:postgresql
+    environment:
+      - DB_HOST=postgresql
+      - DB_ADAPTER=postgresql
+      - DB_PORT=5432
+      - DB_USER=cow_dev
+      - DB_PASS=cow_dev_pass
+      - DB_NAME=cow_gitlab
+
+      - REDIS_HOST=redisio
+      - REDIS_PORT=6379
+
+      - DEBUG=false
+      - TZ=America/New_York
+      - GITLAB_TIMEZONE=Eastern Time (US & Canada)
+
+      - GITLAB_SECRETS_DB_KEY_BASE=long-and-random-alphanumeric-string
+
+      - GITLAB_HOST=192.168.99.100
+      #- GITLAB_PORT=10080
+      #- GITLAB_SSH_PORT=10022
+      - GITLAB_RELATIVE_URL_ROOT=/gitlab
+
+      - GITLAB_NOTIFY_ON_BROKEN_BUILDS=true
+      - GITLAB_NOTIFY_PUSHER=false
+
+      - GITLAB_EMAIL_ENABLED=true
+      - GITLAB_EMAIL=gitlab@example.com
+      - GITLAB_EMAIL_REPLY_TO=noreply@example.com
+      - GITLAB_INCOMING_EMAIL_ADDRESS=Richard@example.com
+
+      - GITLAB_BACKUPS=daily
+      - GITLAB_BACKUP_TIME=01:00
+
+      - SMTP_ENABLED=true
+      - SMTP_DOMAIN=www.smtp.com
+      - SMTP_HOST=smtpserver.smtp.com
+    volumes:
+      - /srv/docker/gitlab/gitlab:/home/git/data
+    network_mode: "bridge"
+
   registry:
     image: registry:2.3
     ports:
-     # - 127.0.0.1:5000:5000
-      - 5000:5000    
+      - 127.0.0.1:5000:5000
+      #- 5000:5000
     volumes:
-      - $PWD/srv/docker/registry/data:/var/lib/registry 
-    network_mode: "bridge"      
+      - /srv/docker/registry/data:/var/lib/registry
+    network_mode: "bridge"
 
-#  registry-ui:
-#    image: atcol/docker-registry-ui:latest
-#    ports:     
-#      - 8080:8080
-#    links:
-#      - registry:registry    
-#    network_mode: "bridge"     
-#
-#  docker-registry-frontend:
-#    image: konradkleine/docker-registry-frontend:v2
-#    ports:     
-#      - 8080:8080
-#    links:
-#      - registry:registry
-#    environment:
-#      - ENV_DOCKER_REGISTRY_HOST=vwat137
-#      - ENV_DOCKER_REGISTRY_PORT=5000
-#    network_mode: "bridge" 
 
   postgresql:
     #restart: always
-    image: postgres:9.5.1
+    #image: postgres:9.5.1
+    image: sameersbn/postgresql:9.4-13
     environment:
-      - POSTGRES_USER=sonar
-      - POSTGRES_PASSWORD=sonar_cow_pass
-      - POSTGRES_DB=cow_sonar    
+      - DB_USER=cow_dev
+      - DB_PASS=cow_dev_pass
+      - DB_NAME=cow_sonar,cow_gitlab
     volumes:
-      - $PWD/srv/docker/gitlab/postgresql:/var/lib/postgresql  
+      - /srv/docker/postgresql:/var/lib/postgresql
     #To use the bridge network use network_mode: https://docs.docker.com/compose/compose-file/#network-mode
-    network_mode: "bridge"   
-  
+    network_mode: "bridge"
+
   sonar:
     image: sonarqube:5.3
+    #build: ./sonar
+    #ports:
+     #- "19000:9000"
+     #- "19092:9092"
     links:
       - postgresql:sonar_db
     environment:
-     - SONARQUBE_JDBC_USERNAME=sonar
-     - SONARQUBE_JDBC_PASSWORD=sonar_cow_pass
-     - SONARQUBE_JDBC_URL=jdbc:postgresql://sonar_db/cow_sonar  
+     - SONARQUBE_JDBC_USERNAME=cow_dev
+     - SONARQUBE_JDBC_PASSWORD=cow_dev_pass
+     - SONARQUBE_JDBC_URL=jdbc:postgresql://sonar_db/cow_sonar
     network_mode: "bridge"
-    volumes:   
-      - $PWD/docker/conf/sonar/sonar.properties:/opt/sonarqube/conf/sonar.properties
-    
+    volumes:
+      - $PWD/conf/sonar/sonar.properties:/opt/sonarqube/conf/sonar.properties
+    network_mode: "bridge"
+
   nexus:
     image: sonatype/nexus:2.12.0-01
     environment:
       - CONTEXT_PATH=/nexus
     volumes:
-      - $PWD/srv/docker/nexus:/sonatype-work    
-    network_mode: "bridge"      
+      - /srv/docker/nexus:/sonatype-work
+    network_mode: "bridge"
+
+  jenkins:
+    build: ./jenkins
+    ports:
+      - "18081:8080"
+    links:
+      - nexus:nexus
+      - gitlab:gitlab
+      - sonar:sonar
+      #- selhub:hub
+    volumes:
+      - /srv/docker/jenkins:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /usr/local/bin/docker:/usr/bin/docker
+    network_mode: "bridge"
+
+  redis:
+    image: sameersbn/redis:latest
+    #restart: always
+    volumes:
+      - /srv/docker/redis:/var/lib/redis
+    network_mode: "bridge"
