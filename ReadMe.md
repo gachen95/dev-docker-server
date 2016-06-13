@@ -60,7 +60,7 @@ My solution is to let docker-compose use docker0 which has a customized subset 1
 		$ sudo nano /etc/default/docker
 			DOCKER_OPTS="--bip=198.168.9.1/24"
 
-                $ cd /etc/systemd/system/multi-user.target.wants
+		$ cd /etc/systemd/system/multi-user.target.wants
 		$ sudo nano docker.service
 		
 			.......
