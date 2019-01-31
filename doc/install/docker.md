@@ -68,7 +68,7 @@
 			$ docker images --no-trunc| grep none | awk '{print $3}' | xargs -r docker rmi  
 	2. Delete Existed container
 	
-			$ docker rm `docker ps -a | grep Exited | awk '{print $1 }’`
+			$ docker rm `docker ps -a | grep Exited | awk '{print $1 }'`
 	3. Delete never used images
 	
 			$ docker rmi `docker images -aq`  
